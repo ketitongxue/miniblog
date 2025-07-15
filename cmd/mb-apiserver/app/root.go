@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/ketitongxue/miniblog/cmd/mb-apiserver/app/options"
+	"github.com/ketitongxue/miniblog/pkg/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -37,9 +38,13 @@ to quickly create a Cobra application.`,
 	SilenceUsage: true,
 	// 指定调用 cmd.Execute() 时，执行的 Run 函数
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// 如果传入 --version，则打印版本信息并退出
+		version.PrintAndExitIfRequested()
+
 		if err := viper.Unmarshal(opts); err != nil {
 			return err
 		}
+
 		fmt.Printf("All Viper settings: %v\n", viper.AllSettings())
 
 		// 输出 opts 结构体内容
@@ -81,4 +86,6 @@ func init() {
 	opts = options.NewServerOptions()
 	// 将 ServerOptions 中的选项绑定到命令标志
 	opts.AddFlags(rootCmd.PersistentFlags())
+
+	version.AddFlags(rootCmd.PersistentFlags())
 }
