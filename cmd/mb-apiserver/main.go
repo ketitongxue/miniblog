@@ -1,0 +1,15 @@
+// Copyright 2025 JuZX <wo_sakura@163.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file. The original repo for
+// this file is https://github.com/ketitongxue/miniblog.
+
+package main
+
+import (
+	"github.com/ketitongxue/miniblog/cmd/mb-apiserver/app"
+	_ "go.uber.org/automaxprocs"
+)
+
+func main() {
+	app.Execute()
+}
