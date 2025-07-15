@@ -37,6 +37,9 @@ to quickly create a Cobra application.`,
 	SilenceUsage: true,
 	// 指定调用 cmd.Execute() 时，执行的 Run 函数
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := viper.Unmarshal(opts); err != nil {
+			return err
+		}
 		fmt.Printf("All Viper settings: %v\n", viper.AllSettings())
 
 		// 输出 opts 结构体内容
@@ -78,5 +81,4 @@ func init() {
 	opts = options.NewServerOptions()
 	// 将 ServerOptions 中的选项绑定到命令标志
 	opts.AddFlags(rootCmd.PersistentFlags())
-
 }
