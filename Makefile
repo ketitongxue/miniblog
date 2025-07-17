@@ -26,6 +26,9 @@ GO_LDFLAGS += \
     -X $(VERSION_PACKAGE).gitCommit=$(GIT_COMMIT) \
     -X $(VERSION_PACKAGE).gitTreeState=$(GIT_TREE_STATE) \
     -X $(VERSION_PACKAGE).buildDate=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+# Protobuf 文件存放路径
+APIROOT=$(PROJ_ROOT_DIR)/pkg/api
  
 # ==============================================================================
 # 定义默认目标为 all
@@ -64,3 +67,14 @@ tidy: # 自动添加/移除依赖包.
 clean: # 清理构建产物、临时文件等.
 	@echo "Cleaning up..."
 	@-rm -vrf $(OUTPUT_DIR)
+
+.PHONY: protoc
+protoc: # 编译 protobuf 文件.
+	@echo "===========> Generate protobuf files"
+	@echo $(APIROOT) 
+	@protoc                                              \
+		--proto_path=$(APIROOT)                          \
+		--proto_path=$(PROJ_ROOT_DIR)/third_party/protobuf    \
+		--go_out=paths=source_relative:$(APIROOT)        \
+		--go-grpc_out=paths=source_relative:$(APIROOT)   \
+		$(shell find $(APIROOT) -name *.proto)

@@ -6,11 +6,10 @@
 package app
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/ketitongxue/miniblog/cmd/mb-apiserver/app/options"
+	"github.com/ketitongxue/miniblog/internal/pkg/log"
 	"github.com/ketitongxue/miniblog/pkg/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -41,15 +40,36 @@ to quickly create a Cobra application.`,
 		// 如果传入 --version，则打印版本信息并退出
 		version.PrintAndExitIfRequested()
 
+		// 初始化日志
+		log.Init(logOptions())
+		defer log.Sync() // 确保日志在退出时被刷新到磁盘
+
 		if err := viper.Unmarshal(opts); err != nil {
 			return err
 		}
 
-		fmt.Printf("All Viper settings: %v\n", viper.AllSettings())
+		// fmt.Printf("All Viper settings: %v\n", viper.AllSettings())
+		// log.Infow("All Viper settings", "setting", viper.AllSettings())
+		// log.Infow("ServerMode from Viper", "jwt-key", viper.GetString("jwt-key"))
 
 		// 输出 opts 结构体内容
-		jsonData, _ := json.MarshalIndent(opts, "", "  ")
-		fmt.Println(string(jsonData))
+		// jsonData, _ := json.MarshalIndent(opts, "", "  ")
+		// fmt.Println(string(jsonData))
+
+		cfg, err := opts.Config()
+		if err != nil {
+			return err
+		}
+
+		// 创建服务器实例。
+		// 注意这里是联合服务器，因为可能同时启动多个不同类型的服务器。
+		server, err := cfg.NewUnionServer()
+		if err != nil {
+			return err
+		}
+
+		// 启动服务器
+		return server.Run()
 
 		return nil
 	},
@@ -88,4 +108,26 @@ func init() {
 	opts.AddFlags(rootCmd.PersistentFlags())
 
 	version.AddFlags(rootCmd.PersistentFlags())
+}
+
+// logOptions 从 viper 中读取日志配置，构建 *log.Options 并返回.
+// 注意：viper.Get<Type>() 中 key 的名字需要使用 . 分割，以跟 YAML 中保持相同的缩进.
+func logOptions() *log.Options {
+	opts := log.NewOptions()
+	if viper.IsSet("log.disable-caller") {
+		opts.DisableCaller = viper.GetBool("log.disable-caller")
+	}
+	if viper.IsSet("log.disable-stacktrace") {
+		opts.DisableStacktrace = viper.GetBool("log.disable-stacktrace")
+	}
+	if viper.IsSet("log.level") {
+		opts.Level = viper.GetString("log.level")
+	}
+	if viper.IsSet("log.format") {
+		opts.Format = viper.GetString("log.format")
+	}
+	if viper.IsSet("log.output-paths") {
+		opts.OutputPaths = viper.GetStringSlice("log.output-paths")
+	}
+	return opts
 }
