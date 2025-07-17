@@ -29,3 +29,8 @@ log:
   format: json
   # 指定日志输出位置，多个输出，用 `逗号 + 空格` 分开。stdout：标准输出
   output-paths: [/tmp/miniblog.log, stdout]
+
+# GRPC 服务器相关配置
+grpc:
+  # GRPC 服务器监听地址
+  addr: :6666

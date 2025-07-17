@@ -6,8 +6,6 @@
 package app
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/ketitongxue/miniblog/cmd/mb-apiserver/app/options"
@@ -51,12 +49,27 @@ to quickly create a Cobra application.`,
 		}
 
 		// fmt.Printf("All Viper settings: %v\n", viper.AllSettings())
-		log.Infow("All Viper settings", "setting", viper.AllSettings())
-		log.Infow("ServerMode from Viper", "jwt-key", viper.GetString("jwt-key"))
+		// log.Infow("All Viper settings", "setting", viper.AllSettings())
+		// log.Infow("ServerMode from Viper", "jwt-key", viper.GetString("jwt-key"))
 
 		// 输出 opts 结构体内容
-		jsonData, _ := json.MarshalIndent(opts, "", "  ")
-		fmt.Println(string(jsonData))
+		// jsonData, _ := json.MarshalIndent(opts, "", "  ")
+		// fmt.Println(string(jsonData))
+
+		cfg, err := opts.Config()
+		if err != nil {
+			return err
+		}
+
+		// 创建服务器实例。
+		// 注意这里是联合服务器，因为可能同时启动多个不同类型的服务器。
+		server, err := cfg.NewUnionServer()
+		if err != nil {
+			return err
+		}
+
+		// 启动服务器
+		return server.Run()
 
 		return nil
 	},
